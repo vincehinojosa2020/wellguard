@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/shared/Navbar';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             }
           />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </div>

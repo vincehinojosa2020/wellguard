@@ -74,9 +74,9 @@ const Navbar = () => {
           >
             Login
           </Link>
-          <Link to="#">
+          <Link to="/admin">
             <span className="text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B] px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Contact Us
+              Admin
             </span>
           </Link>
           <Link to="/dashboard">

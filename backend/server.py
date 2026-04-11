@@ -12,6 +12,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import uuid
+import random
 from datetime import datetime, timedelta
 
 ROOT_DIR = Path(__file__).parent
@@ -440,6 +441,251 @@ async def seed_data():
 
 # Include router and middleware
 app.include_router(api_router)
+
+# ==================== ADMIN / SUPPORT ENGINEERING ROUTES ====================
+
+from seed_data import (
+    generate_customers, generate_customer_scans, generate_customer_vulns,
+    generate_support_tickets
+)
+
+admin_router = APIRouter(prefix="/api/admin")
+
+@admin_router.post("/seed")
+async def seed_admin_data():
+    """Seed 1,000 customer accounts with realistic data."""
+    existing = await db.customers.count_documents({})
+    if existing > 0:
+        return {"message": f"Admin data already seeded ({existing} customers)", "count": existing}
+    
+    logger.info("Generating 1,000 customer accounts...")
+    customers = generate_customers(1000)
+    
+    # Insert customers
+    await db.customers.insert_many(customers)
+    
+    # Generate support tickets for some customers
+    all_tickets = []
+    for c in random.sample(customers, min(300, len(customers))):
+        tickets = generate_support_tickets(c)
+        all_tickets.extend(tickets)
+    
+    if all_tickets:
+        await db.support_tickets.insert_many(all_tickets)
+    
+    # Create indexes
+    await db.customers.create_index("name")
+    await db.customers.create_index("tier")
+    await db.customers.create_index("status")
+    await db.customers.create_index("industry")
+    await db.customers.create_index("region")
+    await db.customers.create_index("health_score")
+    await db.support_tickets.create_index("customer_id")
+    await db.support_tickets.create_index("status")
+    
+    logger.info(f"Seeded {len(customers)} customers, {len(all_tickets)} support tickets")
+    return {
+        "message": "Seeded admin data successfully",
+        "customers": len(customers),
+        "support_tickets": len(all_tickets),
+    }
+
+
+@admin_router.get("/stats")
+async def admin_platform_stats():
+    """Platform-wide statistics for admin dashboard."""
+    total_customers = await db.customers.count_documents({})
+    
+    if total_customers == 0:
+        return {"seeded": False, "message": "No data. Call POST /api/admin/seed first."}
+    
+    # Aggregate stats
+    pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_apps": {"$sum": "$application_count"},
+            "total_scans": {"$sum": "$scan_count"},
+            "total_components": {"$sum": "$component_count"},
+            "total_developers": {"$sum": "$developer_count"},
+            "total_mrr": {"$sum": "$mrr"},
+            "avg_health": {"$avg": "$health_score"},
+            "total_critical": {"$sum": "$vulnerabilities.critical"},
+            "total_high": {"$sum": "$vulnerabilities.high"},
+            "total_medium": {"$sum": "$vulnerabilities.medium"},
+            "total_low": {"$sum": "$vulnerabilities.low"},
+            "total_vulns": {"$sum": "$vulnerabilities.total"},
+        }}
+    ]
+    agg_result = await db.customers.aggregate(pipeline).to_list(1)
+    stats = agg_result[0] if agg_result else {}
+    
+    # Tier breakdown
+    tier_pipeline = [{"$group": {"_id": "$tier", "count": {"$sum": 1}, "mrr": {"$sum": "$mrr"}}}]
+    tiers = await db.customers.aggregate(tier_pipeline).to_list(10)
+    
+    # Status breakdown
+    status_pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
+    statuses = await db.customers.aggregate(status_pipeline).to_list(10)
+    
+    # Industry breakdown
+    industry_pipeline = [{"$group": {"_id": "$industry", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}, {"$limit": 10}]
+    industries = await db.customers.aggregate(industry_pipeline).to_list(10)
+    
+    # Region breakdown
+    region_pipeline = [{"$group": {"_id": "$region", "count": {"$sum": 1}}}]
+    regions = await db.customers.aggregate(region_pipeline).to_list(10)
+    
+    # Open tickets
+    open_tickets = await db.support_tickets.count_documents({"status": {"$in": ["open", "in_progress"]}})
+    critical_tickets = await db.support_tickets.count_documents({"priority": "critical", "status": {"$in": ["open", "in_progress"]}})
+    
+    # Critical customers
+    critical_customers = await db.customers.count_documents({"status": "critical"})
+    warning_customers = await db.customers.count_documents({"status": "warning"})
+    
+    return {
+        "seeded": True,
+        "total_customers": total_customers,
+        "total_applications": stats.get("total_apps", 0),
+        "total_scans": stats.get("total_scans", 0),
+        "total_components": stats.get("total_components", 0),
+        "total_developers": stats.get("total_developers", 0),
+        "total_mrr": stats.get("total_mrr", 0),
+        "avg_health_score": round(stats.get("avg_health", 0), 1),
+        "vulnerabilities": {
+            "critical": stats.get("total_critical", 0),
+            "high": stats.get("total_high", 0),
+            "medium": stats.get("total_medium", 0),
+            "low": stats.get("total_low", 0),
+            "total": stats.get("total_vulns", 0),
+        },
+        "tiers": {t["_id"]: {"count": t["count"], "mrr": t["mrr"]} for t in tiers},
+        "statuses": {s["_id"]: s["count"] for s in statuses},
+        "top_industries": [{"name": i["_id"], "count": i["count"]} for i in industries],
+        "regions": {r["_id"]: r["count"] for r in regions},
+        "support": {
+            "open_tickets": open_tickets,
+            "critical_tickets": critical_tickets,
+        },
+        "critical_customers": critical_customers,
+        "warning_customers": warning_customers,
+    }
+
+
+@admin_router.get("/customers")
+async def list_customers(
+    search: Optional[str] = None,
+    tier: Optional[str] = None,
+    status: Optional[str] = None,
+    industry: Optional[str] = None,
+    region: Optional[str] = None,
+    sort_by: str = "health_score",
+    sort_order: str = "asc",
+    limit: int = 50,
+    skip: int = 0,
+):
+    """List customers with search, filter, sort, and pagination."""
+    query = {}
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"customer_number": {"$regex": search, "$options": "i"}},
+            {"contact_email": {"$regex": search, "$options": "i"}},
+        ]
+    if tier:
+        query["tier"] = tier
+    if status:
+        query["status"] = status
+    if industry:
+        query["industry"] = industry
+    if region:
+        query["region"] = region
+    
+    sort_dir = 1 if sort_order == "asc" else -1
+    
+    customers = await db.customers.find(
+        query, {"_id": 0}
+    ).sort(sort_by, sort_dir).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.customers.count_documents(query)
+    
+    return {"customers": customers, "total": total, "limit": limit, "skip": skip}
+
+
+@admin_router.get("/customers/{customer_id}")
+async def get_customer_detail(customer_id: str):
+    """Get detailed view of a customer — like remoting into their instance."""
+    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Generate their scan history
+    scans = generate_customer_scans(customer, count=20)
+    
+    # Generate their vulnerabilities
+    vulns = generate_customer_vulns(customer, count=25)
+    
+    # Get support tickets
+    tickets = await db.support_tickets.find(
+        {"customer_id": customer_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(20)
+    
+    return {
+        "customer": customer,
+        "scans": scans,
+        "vulnerabilities": vulns,
+        "support_tickets": tickets,
+    }
+
+
+@admin_router.get("/tickets")
+async def list_support_tickets(
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0,
+):
+    """List support tickets across all customers."""
+    query = {}
+    if status:
+        query["status"] = status
+    if priority:
+        query["priority"] = priority
+    
+    tickets = await db.support_tickets.find(
+        query, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.support_tickets.count_documents(query)
+    
+    return {"tickets": tickets, "total": total}
+
+
+@admin_router.get("/alerts")
+async def get_platform_alerts():
+    """Get platform-wide alerts for support engineering."""
+    # Critical status customers
+    critical_customers = await db.customers.find(
+        {"status": "critical"}, {"_id": 0, "id": 1, "name": 1, "health_score": 1, "tier": 1, "last_active": 1}
+    ).sort("health_score", 1).limit(20).to_list(20)
+    
+    # Critical tickets
+    critical_tickets = await db.support_tickets.find(
+        {"priority": "critical", "status": {"$in": ["open", "in_progress"]}}, {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    # High-risk customers (risk_score > 7)
+    high_risk = await db.customers.find(
+        {"risk_score": {"$gt": 7}}, {"_id": 0, "id": 1, "name": 1, "risk_score": 1, "tier": 1, "vulnerabilities": 1}
+    ).sort("risk_score", -1).limit(10).to_list(10)
+    
+    return {
+        "critical_customers": critical_customers,
+        "critical_tickets": critical_tickets,
+        "high_risk_customers": high_risk,
+    }
+
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,
