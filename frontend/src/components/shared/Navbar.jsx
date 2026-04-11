@@ -7,8 +7,6 @@ import { Button } from '../ui/button';
 const Navbar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
-  const isDashboard = location.pathname.startsWith('/dashboard');
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
@@ -74,14 +72,16 @@ const Navbar = () => {
             to="/dashboard"
             className="text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B] px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            {isDashboard ? 'Dashboard' : 'Login'}
+            Login
           </Link>
-          <Link to="#" className="text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B] px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-            Contact Us
+          <Link to="#">
+            <span className="text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B] px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Contact Us
+            </span>
           </Link>
           <Link to="/dashboard">
-            <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white text-[14px] font-semibold px-5 py-2.5 rounded-lg transition-all hover:shadow-lg">
-              Book a Demo
+            <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white text-[14px] font-semibold px-5 h-[44px] rounded-lg transition-all hover:shadow-lg">
+              Get a Demo
             </Button>
           </Link>
         </div>
@@ -112,12 +112,7 @@ const Navbar = () => {
                   {openDropdown === idx && (
                     <div className="pl-4 space-y-1">
                       {link.children.map((child, childIdx) => (
-                        <Link
-                          key={childIdx}
-                          to={child.href}
-                          className="block py-2 text-[14px] text-gray-500 hover:text-[#1B1F3B]"
-                          onClick={() => setMobileOpen(false)}
-                        >
+                        <Link key={childIdx} to={child.href} className="block py-2 text-[14px] text-gray-500 hover:text-[#1B1F3B]" onClick={() => setMobileOpen(false)}>
                           {child.label}
                         </Link>
                       ))}
@@ -125,20 +120,16 @@ const Navbar = () => {
                   )}
                 </div>
               ) : (
-                <Link
-                  to={link.href || '#'}
-                  className="block py-2 text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B]"
-                  onClick={() => setMobileOpen(false)}
-                >
+                <Link to={link.href || '#'} className="block py-2 text-[15px] font-medium text-gray-700 hover:text-[#1B1F3B]" onClick={() => setMobileOpen(false)}>
                   {link.label}
                 </Link>
               )}
             </div>
           ))}
           <div className="pt-4 border-t border-gray-100 mt-2 space-y-3">
-            <Link to="/dashboard" className="block text-center">
+            <Link to="/dashboard" className="block text-center" onClick={() => setMobileOpen(false)}>
               <Button className="w-full bg-[#E8553A] hover:bg-[#d44a32] text-white">
-                Book a Demo
+                Get a Demo
               </Button>
             </Link>
           </div>

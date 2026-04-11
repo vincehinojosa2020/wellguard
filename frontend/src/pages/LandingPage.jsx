@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import {
   ShieldAlert, GitBranch, ScanSearch, Eye, PackageCheck, FileCheck2,
-  ArrowRight, CheckCircle2, Hexagon, ChevronRight, Terminal, Shield,
-  Zap, Lock, BarChart3, Globe
+  ArrowRight, CheckCircle2, Hexagon, Terminal
 } from 'lucide-react';
 import {
   platformFeatures, statsData, inputSources, outputBenefits
@@ -39,21 +38,21 @@ const LandingPage = () => {
               <motion.p variants={fadeUp} className="text-[#C8FF00] font-semibold text-sm tracking-wider uppercase mb-4">
                 Introducing Type-A Platform
               </motion.p>
-              <motion.h1 variants={fadeUp} className="text-4xl lg:text-[56px] font-bold text-white leading-[1.1] mb-6">
-                Real-Time Intelligence for AI Coding Assistants
+              <motion.h1 variants={fadeUp} className="text-4xl lg:text-[56px] font-bold text-white leading-[1.1] mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Your Code Deserves Better Protection
               </motion.h1>
               <motion.p variants={fadeUp} className="text-gray-300 text-lg leading-relaxed mb-8 max-w-xl">
-                Put guardrails in place for AI assistants to choose the best components and automate dependency maintenance. Powered by Trivy SCA scanning.
+                Stop guessing about your software supply chain. Type-A finds vulnerabilities before attackers do — powered by Trivy's open-source SCA engine, trusted by thousands of engineering teams.
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
                 <Link to="/dashboard">
-                  <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white text-[15px] font-semibold px-8 py-6 rounded-lg transition-all hover:shadow-xl hover:shadow-red-500/20">
-                    Get Started Free
+                  <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white text-[15px] font-semibold px-8 h-[52px] rounded-lg transition-all hover:shadow-xl hover:shadow-red-500/20">
+                    Start Scanning Free
                   </Button>
                 </Link>
                 <Link to="/dashboard">
-                  <Button variant="outline" className="border-gray-500 text-white hover:bg-white/10 text-[15px] font-semibold px-8 py-6 rounded-lg">
-                    Watch Demo
+                  <Button variant="outline" className="border-gray-500 text-white hover:bg-white/10 text-[15px] font-semibold px-8 h-[52px] rounded-lg">
+                    See How It Works
                   </Button>
                 </Link>
               </motion.div>
@@ -80,7 +79,7 @@ const LandingPage = () => {
                 <div className="p-5 font-mono text-sm space-y-3">
                   <div>
                     <span className="text-[#C8FF00]">$ </span>
-                    <span className="text-white">type-a scan --source ./project</span>
+                    <span className="text-white">type-a scan --source nginx:latest</span>
                   </div>
                   <div className="text-gray-400">Scanning dependencies with Trivy engine...</div>
                   <div className="text-gray-400">Found 234 components across 12 ecosystems</div>
@@ -130,9 +129,8 @@ const LandingPage = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
-                  className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                  className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 >
-                  <Globe className="w-5 h-5 text-[#1B1F3B]" />
                   <span className="text-[15px] font-medium text-gray-700">{source}</span>
                   <ArrowRight className="w-4 h-4 text-[#1B1F3B] ml-auto" />
                 </motion.div>
@@ -146,7 +144,7 @@ const LandingPage = () => {
               viewport={{ once: true }}
               className="bg-[#1B1F3B] rounded-2xl p-8 text-center relative"
             >
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-2" style={{ fontStyle: 'italic' }}>
+              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>
                 Type-A One
               </h2>
               <p className="text-gray-300 text-sm mb-8">AI-Native DevSecOps Platform</p>
@@ -154,7 +152,7 @@ const LandingPage = () => {
                 {platformFeatures.map((feature) => {
                   const Icon = iconMap[feature.icon];
                   return (
-                    <div key={feature.id} className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/15 transition-colors">
+                    <div key={feature.id} className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/15 transition-colors cursor-pointer">
                       {Icon && <Icon className="w-6 h-6 text-[#C8FF00] mx-auto mb-2" />}
                       <p className="text-white text-xs font-medium">{feature.title}</p>
                     </div>
@@ -163,7 +161,7 @@ const LandingPage = () => {
               </div>
               <div className="text-center">
                 <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Powered by</p>
-                <p className="text-2xl font-bold text-white italic">Unmatched Open Source Intelligence</p>
+                <p className="text-2xl font-bold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>Unmatched Open Source Intelligence</p>
                 <p className="text-gray-400 text-xs mt-2">Built on Trivy & OSS Index</p>
               </div>
             </motion.div>
@@ -201,11 +199,11 @@ const LandingPage = () => {
             <motion.p variants={fadeUp} className="text-[#E8553A] font-semibold text-sm tracking-wider uppercase mb-3">
               Platform Capabilities
             </motion.p>
-            <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-[#1B1F3B] mb-4">
-              Everything You Need to Secure Your Supply Chain
+            <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-[#1B1F3B] mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Everything Your Team Needs to Ship Securely
             </motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 text-lg max-w-2xl mx-auto">
-              From vulnerability detection to license compliance, Type-A provides comprehensive coverage for your software supply chain.
+              From vulnerability detection to license compliance, Type-A gives you complete visibility into every component your applications depend on.
             </motion.p>
           </motion.div>
 
@@ -219,12 +217,12 @@ const LandingPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.08 }}
-                  className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-[#1B1F3B]/20 hover:shadow-lg transition-all duration-300"
+                  className="group bg-white rounded-xl p-8 border border-gray-200 hover:border-[#1B1F3B]/20 hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[#1B1F3B]/5 flex items-center justify-center mb-4 group-hover:bg-[#1B1F3B] transition-colors duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-[#1B1F3B]/5 flex items-center justify-center mb-5 group-hover:bg-[#1B1F3B] transition-colors duration-300">
                     {Icon && <Icon className="w-6 h-6 text-[#1B1F3B] group-hover:text-[#C8FF00] transition-colors duration-300" />}
                   </div>
-                  <h3 className="text-lg font-bold text-[#1B1F3B] mb-2">{feature.title}</h3>
+                  <h3 className="text-lg font-bold text-[#1B1F3B] mb-3">{feature.title}</h3>
                   <p className="text-gray-500 text-[14px] leading-relaxed">{feature.description}</p>
                 </motion.div>
               );
@@ -254,7 +252,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Adam Carbajal CTA Section */}
+      {/* CTA Section — Adam Carbajal tribute */}
       <section className="py-24 bg-white">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-12 lg:p-16 relative overflow-hidden">
@@ -263,21 +261,21 @@ const LandingPage = () => {
               <p className="text-[#E8553A] font-semibold text-sm tracking-wider uppercase mb-4">
                 Why Type-A?
               </p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-[#1B1F3B] mb-4">
+              <h2 className="text-3xl lg:text-4xl font-bold text-[#1B1F3B] mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 "Type-A" — The Only Way to Describe Our Leadership
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                Named after the relentless drive and vision of our executive leadership. Type-A represents excellence in software supply chain security — proactive, precise, and uncompromising.
+                Named after the relentless drive and vision of our executive leadership. Type-A represents excellence in software supply chain security — proactive, precise, and uncompromising. Your code is only as strong as the weakest dependency.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/dashboard">
-                  <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white font-semibold px-8 py-6 rounded-lg transition-all hover:shadow-lg">
-                    Start Scanning Now <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button className="bg-[#E8553A] hover:bg-[#d44a32] text-white font-semibold px-8 h-[52px] rounded-lg transition-all hover:shadow-lg">
+                    Run Your First Scan <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link to="#">
-                  <Button variant="outline" className="border-gray-300 text-[#1B1F3B] font-semibold px-8 py-6 rounded-lg hover:bg-gray-50">
-                    View Pricing
+                  <Button variant="outline" className="border-gray-300 text-[#1B1F3B] font-semibold px-8 h-[52px] rounded-lg hover:bg-gray-50">
+                    See Pricing
                   </Button>
                 </Link>
               </div>
@@ -299,7 +297,7 @@ const LandingPage = () => {
                 <span className="text-xl font-bold">Type-A</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-4">
-                AI-Native DevSecOps Platform. Securing the world's software supply chain with unmatched open source intelligence.
+                AI-Native DevSecOps Platform. Securing your software supply chain with unmatched open source intelligence.
               </p>
               <p className="text-gray-500 text-xs">Powered by Trivy Open Source SCA Scanner</p>
             </div>
@@ -325,7 +323,6 @@ const LandingPage = () => {
             <div className="flex gap-6">
               <Link to="#" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">Privacy Policy</Link>
               <Link to="#" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">Terms of Service</Link>
-              <Link to="#" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
