@@ -254,6 +254,6 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-    - message: "Backend implemented with FastAPI + Trivy integration. All endpoints are connected to MongoDB. Trivy v0.69.3 is installed. The POST /api/scans endpoint runs trivy CLI as a background task. Test all API endpoints. For the scan test, use 'alpine:3.19' as target with scan_type 'image' - this should be a small fast scan. Backend URL is https://pensive-keldysh-9.preview.emergentagent.com"
+    - message: "Backend implemented with FastAPI + Trivy integration. All endpoints are connected to MongoDB. Trivy v0.69.3 is installed. The POST /api/scans endpoint runs trivy CLI as a background task. Test all API endpoints. For the scan test, use 'alpine:3.19' as target with scan_type 'image' - this should be a small fast scan. Backend URL is https://sca-platform.preview.emergentagent.com"
     - agent: "testing"
     - message: "✅ BACKEND TESTING COMPLETE: All 9 backend tasks tested successfully. Fixed ObjectId serialization issue in dashboard stats endpoint. Real Trivy scanning working excellently - scans complete in 7-10 seconds, properly parse and store vulnerability/component data. All API endpoints functioning correctly with proper data structures and error handling. Backend is production-ready."
