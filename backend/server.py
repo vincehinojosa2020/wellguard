@@ -35,6 +35,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@app.on_event("startup")
+async def ensure_trivy_installed():
+    """Check if Trivy is installed, install if missing."""
+    import shutil
+    if shutil.which("trivy"):
+        logger.info(f"Trivy found at {shutil.which('trivy')}")
+        return
+    for path in ["/usr/bin/trivy", "/usr/local/bin/trivy"]:
+        if Path(path).exists():
+            logger.info(f"Trivy found at {path}")
+            return
+    logger.warning("Trivy not found — attempting installation...")
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "bash", "-c",
+            "curl -sL -o /tmp/trivy.deb 'https://github.com/aquasecurity/trivy/releases/download/v0.69.3/trivy_0.69.3_Linux-ARM64.deb' && dpkg -i /tmp/trivy.deb && rm /tmp/trivy.deb",
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        if shutil.which("trivy") or Path("/usr/bin/trivy").exists():
+            logger.info("Trivy installed successfully")
+        else:
+            # Try x86 if ARM failed
+            proc2 = await asyncio.create_subprocess_exec(
+                "bash", "-c",
+                "curl -sL -o /tmp/trivy.deb 'https://github.com/aquasecurity/trivy/releases/download/v0.69.3/trivy_0.69.3_Linux-64bit.deb' && dpkg -i /tmp/trivy.deb && rm /tmp/trivy.deb",
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+            )
+            await asyncio.wait_for(proc2.communicate(), timeout=120)
+            if shutil.which("trivy") or Path("/usr/bin/trivy").exists():
+                logger.info("Trivy installed successfully (x86)")
+            else:
+                logger.error("Failed to install Trivy automatically")
+    except Exception as e:
+        logger.error(f"Trivy auto-install failed: {e}")
+
 # ==================== MODELS ====================
 
 ALLOWED_SCAN_TYPES = {"image", "repo", "fs", "sbom"}
@@ -153,8 +190,21 @@ def parse_trivy_output(trivy_json: dict) -> dict:
 
 # ==================== TRIVY SCAN HELPERS ====================
 
+def _find_trivy_binary() -> str:
+    """Locate the trivy binary on the system."""
+    import shutil
+    trivy_path = shutil.which("trivy")
+    if trivy_path:
+        return trivy_path
+    for path in ["/usr/bin/trivy", "/usr/local/bin/trivy", "/snap/bin/trivy"]:
+        if Path(path).exists():
+            return path
+    return "trivy"
+
+
 def _build_trivy_command(target: str, scan_type: str) -> list:
     """Build the Trivy CLI command based on scan type."""
+    trivy_bin = _find_trivy_binary()
     base_flags = ["--format", "json", "--severity", "CRITICAL,HIGH,MEDIUM,LOW"]
 
     type_map = {
@@ -164,7 +214,7 @@ def _build_trivy_command(target: str, scan_type: str) -> list:
         "sbom": ["sbom", "--format", "json", target],
     }
     sub_cmd = type_map.get(scan_type, type_map["image"])
-    return ["trivy"] + sub_cmd
+    return [trivy_bin] + sub_cmd
 
 
 def _format_duration(seconds: float) -> str:
