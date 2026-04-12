@@ -27,7 +27,7 @@ export default function WellGuardApp() {
 
   // Real scan state
   const [scanInput, setScanInput] = useState('');
-  const [scanType, setScanType] = useState('image');
+  const [scanType, setScanType] = useState('repo');
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [scanError, setScanError] = useState(null);
@@ -37,32 +37,31 @@ export default function WellGuardApp() {
 
   // Fetch real scans on mount
   useEffect(() => {
-    axios.get(`${API}/scans?limit=10`).then(r => setRealScans(r.data.scans || [])).catch(() => {});
-    axios.get(`${API}/vulnerabilities?limit=50`).then(r => setRealVulns(r.data.vulnerabilities || [])).catch(() => {});
+    axios.get(`${API}/scans?limit=20`).then(r => setRealScans(r.data.scans || [])).catch(() => {});
+    axios.get(`${API}/vulnerabilities?limit=200`).then(r => setRealVulns(r.data.vulnerabilities || [])).catch(() => {});
   }, []);
 
   // Poll for scan completion
   useEffect(() => {
-    if (!pollRef.current) return;
+    if (!scanning) return;
     const interval = setInterval(async () => {
       const scanId = pollRef.current;
-      if (!scanId) { clearInterval(interval); return; }
+      if (!scanId) return; // scan ID not yet available, wait for next tick
       try {
         const res = await axios.get(`${API}/scans/${scanId}`);
         if (res.data.status === 'completed') {
           setScanResult(res.data);
           setScanning(false);
           pollRef.current = null;
-          // Refresh real scans
-          axios.get(`${API}/scans?limit=10`).then(r => setRealScans(r.data.scans || [])).catch(() => {});
-          axios.get(`${API}/vulnerabilities?limit=50`).then(r => setRealVulns(r.data.vulnerabilities || [])).catch(() => {});
+          axios.get(`${API}/scans?limit=20`).then(r => setRealScans(r.data.scans || [])).catch(() => {});
+          axios.get(`${API}/vulnerabilities?limit=200`).then(r => setRealVulns(r.data.vulnerabilities || [])).catch(() => {});
         } else if (res.data.status === 'error' || res.data.status === 'timeout') {
           setScanError(res.data.error || 'Scan failed');
           setScanning(false);
           pollRef.current = null;
         }
       } catch (_) {}
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [scanning]);
 
@@ -80,8 +79,18 @@ export default function WellGuardApp() {
     }
   }, [scanInput, scanType]);
 
-  const openScanDetail = (scan) => {
-    setSelectedScan(scan);
+  const openScanDetail = async (scan) => {
+    // If it's a real backend scan, fetch full detail with vulnerabilities
+    if (scan.scan_type || scan.id?.includes('-')) {
+      try {
+        const res = await axios.get(`${API}/scans/${scan.id}`);
+        setSelectedScan(res.data);
+      } catch (_) {
+        setSelectedScan(scan);
+      }
+    } else {
+      setSelectedScan(scan);
+    }
     setActiveTab('scan-results');
   };
 

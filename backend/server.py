@@ -99,15 +99,20 @@ def _extract_cvss_score(vuln_data: dict) -> float:
 def _parse_single_vulnerability(vuln: dict, target: str, result_type: str) -> dict:
     """Parse a single vulnerability entry from Trivy output."""
     severity = vuln.get("Severity", "UNKNOWN").upper()
+    pkg_name = vuln.get("PkgName", "unknown")
+    installed_ver = vuln.get("InstalledVersion", "unknown")
+    fixed_ver = vuln.get("FixedVersion", "No fix available")
     return {
         "id": str(uuid.uuid4()),
         "vuln_id": vuln.get("VulnerabilityID", "unknown"),
         "title": vuln.get("Title", vuln.get("VulnerabilityID", "Unknown vulnerability")),
         "severity": severity,
         "cvss": _extract_cvss_score(vuln),
-        "component": vuln.get("PkgName", "unknown"),
-        "version": vuln.get("InstalledVersion", "unknown"),
-        "fixed_version": vuln.get("FixedVersion", "No fix available"),
+        "component": pkg_name,
+        "pkg_name": pkg_name,
+        "version": installed_ver,
+        "installed_version": installed_ver,
+        "fixed_version": fixed_ver,
         "description": vuln.get("Description", "No description available"),
         "published": vuln.get("PublishedDate", ""),
         "source": "Trivy",
