@@ -23,7 +23,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'typea')]
 
 # Create the main app
-app = FastAPI(title="Type-A Platform API")
+app = FastAPI(title="WellGuard SCA API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -262,15 +262,17 @@ async def run_trivy_scan(scan_id: str, target: str, scan_type: str):
         parsed = parse_trivy_output(trivy_output)
         await _store_scan_vulnerabilities(parsed, scan_id)
         await _store_scan_components(parsed, scan_id)
+        summary_data = {
+            "total_vulnerabilities": parsed["total_vulns"],
+            "total_components": parsed["total_components"],
+            "severity_counts": parsed["severity_counts"],
+        }
         await _update_scan_status(scan_id, {
             "status": "completed",
             "completed_at": end_time.isoformat(),
             "duration": duration_str,
-            "summary": {
-                "total_vulnerabilities": parsed["total_vulns"],
-                "total_components": parsed["total_components"],
-                "severity_counts": parsed["severity_counts"],
-            },
+            "results": {"summary": summary_data},
+            "summary": summary_data,
             "raw_component_count": parsed["total_components"],
         })
         logger.info(f"Scan {scan_id} completed: {parsed['total_vulns']} vulns, {parsed['total_components']} components")
@@ -284,7 +286,7 @@ async def run_trivy_scan(scan_id: str, target: str, scan_type: str):
 
 @api_router.get("/")
 async def root():
-    return {"message": "Type-A Platform API", "version": "1.0.0"}
+    return {"message": "WellGuard SCA API", "version": "2.4.1"}
 
 
 # --- Dashboard ---
