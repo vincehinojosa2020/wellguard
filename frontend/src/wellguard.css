@@ -1,0 +1,404 @@
+/* WellGuard SCA — 2019 Enterprise Internal Tool Aesthetic */
+/* No fancy fonts. No animations. No gradients. Just functional. */
+
+/* Override global font */
+* {
+  font-family: 'Segoe UI', -apple-system, Arial, sans-serif !important;
+}
+
+code, pre, .font-mono, .monospace {
+  font-family: Consolas, 'Courier New', monospace !important;
+}
+
+/* Override Tailwind's border-radius */
+.wg-app .rounded, .wg-app .rounded-md, .wg-app .rounded-lg, .wg-app .rounded-xl, .wg-app .rounded-2xl {
+  border-radius: 4px !important;
+}
+
+/* Kill all animations and transitions */
+.wg-app *, .wg-app *::before, .wg-app *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Base layout */
+.wg-app {
+  background-color: #f5f5f5;
+  color: #333333;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Header */
+.wg-header {
+  background-color: #1a2332;
+  color: #ffffff;
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid #0066cc;
+}
+
+.wg-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wg-header-logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.wg-header-subtitle {
+  font-size: 11px;
+  color: #8899aa;
+  letter-spacing: 0.3px;
+}
+
+.wg-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #99aabb;
+}
+
+/* Warning banner */
+.wg-banner {
+  background-color: #fff3cd;
+  border-bottom: 1px solid #ffc107;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: #856404;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wg-banner a {
+  color: #0066cc;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Tab navigation */
+.wg-tabs {
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  padding: 0 20px;
+  display: flex;
+  gap: 0;
+}
+
+.wg-tab {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666666;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wg-tab:hover {
+  color: #333333;
+  background-color: #f8f8f8;
+}
+
+.wg-tab.active {
+  color: #0066cc;
+  border-bottom-color: #0066cc;
+}
+
+/* Content area */
+.wg-content {
+  padding: 16px 20px;
+}
+
+/* Summary bar */
+.wg-summary-bar {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.wg-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  border-right: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.wg-summary-item:first-child { padding-left: 0; }
+.wg-summary-item:last-child { border-right: none; }
+
+.wg-summary-label { color: #666666; font-weight: 400; }
+.wg-summary-value { color: #333333; font-weight: 700; }
+
+/* Cards / Panels */
+.wg-panel {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.wg-panel-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fafafa;
+}
+
+.wg-panel-body { padding: 0; }
+
+/* Tables */
+.wg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wg-table thead th {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wg-table thead th:hover { background-color: #eee; }
+
+.wg-table tbody td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #eee;
+  color: #333333;
+  vertical-align: middle;
+}
+
+.wg-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
+.wg-table tbody tr:hover { background-color: #e8f0fe; cursor: pointer; }
+
+/* Status indicators */
+.wg-status-ok { color: #28a745; }
+.wg-status-warn { color: #e68a00; }
+.wg-status-fail { color: #cc0000; }
+.wg-status-info { color: #0066cc; }
+
+/* Severity badges (plain, no fancy styling) */
+.wg-sev {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.wg-sev-critical { background-color: #cc0000; color: #ffffff; }
+.wg-sev-high { background-color: #e68a00; color: #ffffff; }
+.wg-sev-medium { background-color: #ffc107; color: #333333; }
+.wg-sev-low { background-color: #0066cc; color: #ffffff; }
+
+/* Buttons */
+.wg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  cursor: pointer;
+}
+.wg-btn:hover { background-color: #f0f0f0; }
+
+.wg-btn-primary {
+  background-color: #0066cc;
+  border-color: #0066cc;
+  color: #ffffff;
+}
+.wg-btn-primary:hover { background-color: #005bb5; }
+
+.wg-btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Pagination */
+.wg-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #666666;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+/* Breadcrumbs */
+.wg-breadcrumbs {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 12px;
+}
+
+.wg-breadcrumbs a { color: #0066cc; text-decoration: none; }
+.wg-breadcrumbs a:hover { text-decoration: underline; }
+.wg-breadcrumbs span { margin: 0 6px; }
+
+/* Footer */
+.wg-footer {
+  background-color: #ffffff;
+  border-top: 1px solid #ddd;
+  padding: 12px 20px;
+  font-size: 11px;
+  color: #999999;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.wg-footer a { color: #0066cc; }
+
+/* Search input */
+.wg-search {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  width: 300px;
+}
+.wg-search:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 2px rgba(0,102,204,0.15); }
+.wg-search::placeholder { color: #999999; }
+
+/* Notification bell */
+.wg-notif {
+  position: relative;
+  cursor: pointer;
+}
+.wg-notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #cc0000;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 14px;
+  text-align: center;
+}
+
+/* Select dropdown */
+.wg-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+/* Code block */
+.wg-code {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+/* Known limitations list */
+.wg-limitations li {
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #666666;
+}
+
+/* Detail panel */
+.wg-detail-overlay {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.wg-detail-header {
+  padding: 12px 16px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Loading spinner - simple, not fancy */
+.wg-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-top-color: #0066cc;
+  border-radius: 50%;
+  animation: wg-spin 0.6s linear infinite !important;
+}
+
+@keyframes wg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Flex utils */
+.wg-flex { display: flex; }
+.wg-flex-col { flex-direction: column; }
+.wg-items-center { align-items: center; }
+.wg-justify-between { justify-content: space-between; }
+.wg-gap-8 { gap: 8px; }
+.wg-gap-12 { gap: 12px; }
+.wg-gap-16 { gap: 16px; }
+.wg-ml-auto { margin-left: auto; }
+.wg-mt-16 { margin-top: 16px; }
+.wg-mb-8 { margin-bottom: 8px; }
+.wg-mb-16 { margin-bottom: 16px; }
+.wg-text-right { text-align: right; }
+.wg-text-center { text-align: center; }
+.wg-text-muted { color: #999999; }
+.wg-text-sm { font-size: 12px; }
+.wg-text-xs { font-size: 11px; }
+.wg-font-bold { font-weight: 700; }
+.wg-font-mono { font-family: Consolas, 'Courier New', monospace !important; }
+.wg-w-full { width: 100%; }
+.wg-nowrap { white-space: nowrap; }
