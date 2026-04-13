@@ -1,0 +1,91 @@
+name: WellGuard SCA Dependency Scan
+
+on:
+  push:
+    branches: [main, develop, release/*]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 4 * * 1'  # Weekly Monday 4am UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  wellguard-sca:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+            gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb \
+            $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+      - name: Run WellGuard SCA Scan
+        run: |
+          echo "========================================="
+          echo "  WellGuard SCA — Dependency Scan"
+          echo "  Repository: ${{ github.repository }}"
+          echo "  Branch:     ${{ github.ref_name }}"
+          echo "  Commit:     ${{ github.sha }}"
+          echo "  Data:       NIST National Vulnerability Database"
+          echo "  Scope:      Direct dependencies only"
+          echo "========================================="
+          echo ""
+          echo "--- Full JSON Report ---"
+          trivy fs . \
+            --format json \
+            --output wellguard-results.json \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            --exit-code 0
+          echo ""
+          echo "========================================="
+          echo "  WellGuard SCA — Scan Summary"
+          echo "========================================="
+          echo ""
+          trivy fs . \
+            --format table \
+            --severity CRITICAL,HIGH,MEDIUM,LOW
+          echo ""
+          echo "========================================="
+          echo "  NOTE: Direct dependencies only."
+          echo "  Transitive deps are NOT resolved."
+          echo "  For full supply chain analysis,"
+          echo "  evaluate a commercial SCA solution."
+          echo "========================================="
+
+      - name: Upload scan results to WellGuard
+        if: always()
+        run: |
+          curl -sSL -X POST \
+            "${{ vars.WELLGUARD_URL }}/api/scans" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"target\": \"${{ github.repository }}\",
+              \"scan_type\": \"repo\"
+            }" || echo "WellGuard API upload skipped"
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wellguard-sca-results
+          path: wellguard-results.json
+
+      - name: Fail on critical vulnerabilities
+        run: |
+          CRIT_COUNT=$(trivy fs . --severity CRITICAL --format json --quiet | jq '[.Results[]?.Vulnerabilities // [] | length] | add // 0')
+          echo "Critical vulnerabilities found: $CRIT_COUNT"
+          if [ "$CRIT_COUNT" -gt 0 ]; then
+            echo "::error::WellGuard SCA: $CRIT_COUNT critical vulnerabilities detected. See scan results for details."
+            exit 1
+          fi
